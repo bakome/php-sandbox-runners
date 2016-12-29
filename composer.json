@@ -1,0 +1,16 @@
+{
+    "name": "bako/php-sandbox-runners",
+    "require": {
+        "phpunit/phpunit": "^5.7",
+        "behat/behat": "^3.3"
+    },
+    "autoload": {
+        "psr-4": { "SandboxRE\\": "src/" }
+    },
+    "authors": [
+        {
+            "name": "Aleksandar Markovski",
+            "email": "aleksandar@gsix.me"
+        }
+    ]
+}
