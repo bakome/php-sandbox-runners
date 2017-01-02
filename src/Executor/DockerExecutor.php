@@ -43,15 +43,15 @@ abstract class DockerExecutor
         ]);
     }
 
-    public function execute(string $command) : string
+    public function execute(string $command, int $waitTime = 0) : array
     {
         $containerId = $this->createContainer();
         $webSocketStream = $this->attachSocket($containerId);
 
-        $webSocketStream->write($command . PHP_EOL);
+        $webSocketStream->write("time -f \"{{%e,%U,%S}}\" " . $command . PHP_EOL);
 
         $output = "";
-        while (($data = $webSocketStream->read(1)) != false) {
+        while (($data = $webSocketStream->read($waitTime)) != false) {
             $output .= $data;
         }
 
@@ -59,6 +59,19 @@ abstract class DockerExecutor
         $this->containerManager->kill($containerId);
         $this->containerManager->remove($containerId);
 
-        return trim($output);
+        return $this->parseResult($output);
+    }
+
+    private function parseResult($resultString)
+    {
+        $result = [];
+
+        if (preg_match('/{{(.*?)}}/', $resultString, $display) === 1) {
+            $result = explode(",", $display[1]);
+        }
+
+        $result[] = trim(preg_replace('/{{(.*?)}}/', '', $resultString));
+
+        return $result;
     }
 }

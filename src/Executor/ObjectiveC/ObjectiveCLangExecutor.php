@@ -5,7 +5,6 @@ namespace SandboxRE\Executor\ObjectiveC;
 use SandboxRE\Core\SandboxResult;
 use SandboxRE\Executor\DockerExecutor;
 use SandboxRE\Executor\Executor;
-use SandboxRE\Helpers\TerminalHelper;
 
 class ObjectiveCLangExecutor extends DockerExecutor implements Executor
 {
@@ -13,9 +12,7 @@ class ObjectiveCLangExecutor extends DockerExecutor implements Executor
 
     public function __construct()
     {
-        if(!TerminalHelper::commandExist("clang")) {
-            throw new ObjectiveClangCommandMissingException();
-        }
+        parent::__construct();
     }
 
     /**

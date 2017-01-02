@@ -119,7 +119,7 @@
             return array_keys($operatorsCount, max($operatorsCount))[0];
         }
 
-        echo mostlyUsed(["071222-333", "077111-222", "072123-123", "075321-321"]) . PHP_EOL; // Operator A
+        echo mostlyUsed(["071222-333", "077111-222", "072123-123", "075321-321"]); // Operator A
     '). PHP_EOL;
 
 

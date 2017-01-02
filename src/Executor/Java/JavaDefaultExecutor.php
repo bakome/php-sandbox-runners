@@ -13,17 +13,18 @@ class JavaDefaultExecutor extends DockerExecutor implements Executor
 {
     private $baseDir = '/root/runners/';
 
-    public function __construct()
-    {
-        parent::__construct();
+    private $options = [
+        'execWaitTime' => 2
+    ];
 
-//        if(!TerminalHelper::commandExist("javac")) {
-//            throw new JavaCompilerCommandMissingException();
-//        }
-//
-//        if(!TerminalHelper::commandExist("java")) {
-//            throw new JavaRunnerCommandMissingException();
-//        }
+    public function __construct(array $options = [])
+    {
+        $this->options = array_merge(
+            $this->options,
+            $options
+        );
+
+        parent::__construct();
     }
 
     /**
@@ -44,7 +45,7 @@ class JavaDefaultExecutor extends DockerExecutor implements Executor
             $command .= " &&  javac $file.java";
             $command .= " &&  java -cp $this->baseDir $fileName";
 
-            $results = $this->execute($command);
+            $results = $this->execute($command, $this->options['execWaitTime']);
 
         } catch (\Exception $e) {
             $results = $e->getCode . " : " . $e->getMessage();
