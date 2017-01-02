@@ -10,7 +10,7 @@ abstract class DockerExecutor
     protected $docker;
     protected $containerManager;
 
-    protected $dockerImage = 'php-sandbox-runner';
+    protected $dockerImage = 'bakobako/php-sandbox-runner';
 
     public function __construct()
     {
