@@ -48,16 +48,21 @@ abstract class DockerExecutor
         $containerId = $this->createContainer();
         $webSocketStream = $this->attachSocket($containerId);
 
-        $webSocketStream->write("time -f \"{{%e,%U,%S}}\" " . $command . PHP_EOL);
+        try {
+            $webSocketStream->write("time -f \"{{%e,%U,%S}}\" " . $command . PHP_EOL);
 
-        $output = "";
-        while (($data = $webSocketStream->read($waitTime)) != false) {
-            $output .= $data;
+            $output = "";
+            while (($data = $webSocketStream->read($waitTime)) != false) {
+                $output .= $data;
+            }
+
+            $webSocketStream->write("exit" . PHP_EOL);
+        } catch (\Exception $exception) {
+            throw new \Exception($exception->getMessage());
+        } finally {
+            $this->containerManager->kill($containerId);
+            $this->containerManager->remove($containerId);
         }
-
-        $webSocketStream->write("exit" . PHP_EOL);
-        $this->containerManager->kill($containerId);
-        $this->containerManager->remove($containerId);
 
         return $this->parseResult($output);
     }
