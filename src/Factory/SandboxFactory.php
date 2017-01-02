@@ -3,6 +3,7 @@
 namespace SandboxRE\Factory;
 
 use SandboxRE\Core\Sandbox;
+use SandboxRE\Exception\SandboxExecutorNotSupportedException;
 use SandboxRE\Exception\SandboxNotSupportedException;
 use SandboxRE\Executor\Java\JavaDefaultExecutor;
 use SandboxRE\Executor\Javascript\JavascriptNodeExecutor;
@@ -56,7 +57,7 @@ class SandboxFactory implements SandboxFactoryInterface
 
         } catch (\Exception $e) {
             throw new SandboxExecutorNotSupportedException(
-                "Sandbox executor not supported",
+                "Sandbox executor not supported message: {$e->getMessage()}",
                 $executorName['executor']
             );
         }

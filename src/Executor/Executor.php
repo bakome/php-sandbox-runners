@@ -7,7 +7,7 @@ use SandboxRE\Core\SandboxResult;
 interface Executor
 {
     /**
-     * Execute php code snippet
+     * Run code snippet
      *
      * @param string $codeSnippet
      *
@@ -15,4 +15,14 @@ interface Executor
      *
      */
     public function do(string $codeSnippet): SandboxResult;
+
+    /**
+     * Execute code in sandbox
+     *
+     * @param string $command
+     *
+     * @return string
+     *
+     */
+    public function execute(string $command): string;
 }

@@ -2,7 +2,8 @@
     "name": "bako/php-sandbox-runners",
     "require": {
         "phpunit/phpunit": "^5.7",
-        "behat/behat": "^3.3"
+        "behat/behat": "^3.3",
+        "docker-php/docker-php": "^1.24"
     },
     "autoload": {
         "psr-4": { "SandboxRE\\": "src/" }

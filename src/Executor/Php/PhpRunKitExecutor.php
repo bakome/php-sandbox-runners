@@ -5,8 +5,9 @@ namespace SandboxRE\Executor\Php;
 use SandboxRE\Core\SandboxResult;
 use Runkit_Sandbox;
 use SandboxRE\Exception\PhpRunKitExtensionMissingException;
+use SandboxRE\Executor\DockerExecutor;
 
-class PhpRunKitExecutor implements Executor
+class PhpRunKitExecutor extends DockerExecutor implements Executor
 {
     private $runKitSandbox;
 

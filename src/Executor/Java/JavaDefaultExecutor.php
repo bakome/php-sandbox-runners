@@ -5,22 +5,25 @@ namespace SandboxRE\Executor\Java;
 use SandboxRE\Core\SandboxResult;
 use SandboxRE\Exception\JavaCompilerCommandMissingException;
 use SandboxRE\Exception\JavaRunnerCommandMissingException;
+use SandboxRE\Executor\DockerExecutor;
 use SandboxRE\Executor\Executor;
 use SandboxRE\Helpers\TerminalHelper;
 
-class JavaDefaultExecutor implements Executor
+class JavaDefaultExecutor extends DockerExecutor implements Executor
 {
-    private $baseDir = '/tmp/php-sandbox-runners/';
+    private $baseDir = '/root/runners/';
 
     public function __construct()
     {
-        if(!TerminalHelper::commandExist("javac")) {
-            throw new JavaCompilerCommandMissingException();
-        }
+        parent::__construct();
 
-        if(!TerminalHelper::commandExist("java")) {
-            throw new JavaRunnerCommandMissingException();
-        }
+//        if(!TerminalHelper::commandExist("javac")) {
+//            throw new JavaCompilerCommandMissingException();
+//        }
+//
+//        if(!TerminalHelper::commandExist("java")) {
+//            throw new JavaRunnerCommandMissingException();
+//        }
     }
 
     /**
@@ -38,8 +41,12 @@ class JavaDefaultExecutor implements Executor
         $compiledName = $this->baseDir . $this->generateUniqueName();
 
         try {
-            shell_exec("javac $file.java");
-            $results = shell_exec("java -classpath " . escapeshellcmd($this->baseDir) . " $fileName");
+            $this->execute("javac $file.java");
+
+            $results = $this->execute(
+                "java -cp $this->baseDir $fileName"
+            );
+
         } catch (\Exception $e) {
             $results = $e->getCode . " : " . $e->getMessage();
         } finally {
@@ -51,8 +58,8 @@ class JavaDefaultExecutor implements Executor
 
     private function clearFiles($file, $compiledName)
     {
-        @unlink($file . ".java");
-        @unlink($compiledName);
+        $this->execute("rm -rf $file.java");
+        $this->execute("rm -rf $compiledName");
 
         return true;
     }
@@ -61,9 +68,7 @@ class JavaDefaultExecutor implements Executor
     {
         $file = $this->baseDir . $fileName;
 
-        if(!is_dir($this->baseDir)) {
-            mkdir($this->baseDir);
-        }
+        $this->execute("mkdir -p $this->baseDir");
 
         return $file;
     }
@@ -71,10 +76,11 @@ class JavaDefaultExecutor implements Executor
     private function createCodeFileContent($file, $codeSnippet, $fileName)
     {
         $code = str_replace("public class Main", "public class $fileName", $codeSnippet);
+        $code = str_replace("'", "\"", $code);
+        $code = trim(preg_replace('/\s\s+/', ' ', $code));
 
-        $handle = fopen($file . ".java", "w");
-        fwrite($handle, $code);
-        fclose($handle);
+        $this->execute("touch $file.java");
+        $this->execute("echo '$code' >> $file.java");
     }
 
     private function generateUniqueName()

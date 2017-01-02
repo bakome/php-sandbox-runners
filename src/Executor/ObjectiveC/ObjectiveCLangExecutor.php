@@ -3,10 +3,11 @@
 namespace SandboxRE\Executor\ObjectiveC;
 
 use SandboxRE\Core\SandboxResult;
+use SandboxRE\Executor\DockerExecutor;
 use SandboxRE\Executor\Executor;
 use SandboxRE\Helpers\TerminalHelper;
 
-class ObjectiveCLangExecutor implements Executor
+class ObjectiveCLangExecutor extends DockerExecutor implements Executor
 {
     private $baseDir = '/tmp/php-sandbox-runners/';
 
