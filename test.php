@@ -18,54 +18,65 @@
         }
 
     ') . PHP_EOL;
-//
-//    echo $objectiveCSandBox->execute('
-//        #import <Foundation/Foundation.h>
-//
-//        @interface SampleClass:NSObject
-//        /* method declaration */
-//        - (int)max:(int)num1 andNum2:(int)num2;
-//        @end
-//
-//        @implementation SampleClass
-//
-//        /* method returning the max between two numbers */
-//        - (int)max:(int)num1 andNum2:(int)num2{
-//        /* local variable declaration */
-//           int result;
-//
-//           if (num1 > num2)
-//           {
-//              result = num1;
-//           }
-//           else
-//           {
-//              result = num2;
-//           }
-//
-//           return result;
-//        }
-//
-//        @end
-//
-//        int main ()
-//        {
-//           /* local variable definition */
-//           int a = 300;
-//           int b = 500;
-//           int ret;
-//
-//           SampleClass *sampleClass = [[SampleClass alloc]init];
-//
-//           /* calling a method to get max value */
-//           ret = [sampleClass max:a andNum2:b];
-//
-//           printf("%d\n", ret );
-//
-//           return 0;
-//        }
-//    ') . PHP_EOL;
-//
+
+echo $objectiveCSandBox->execute('
+        #import <Foundation/Foundation.h>
+
+        int main ()
+        {
+           printf("%d\n", 10);
+
+           return 0;
+        }
+    ') . PHP_EOL;
+
+    echo $objectiveCSandBox->execute('
+        #import <Foundation/Foundation.h>
+
+        @interface SampleClass:NSObject
+        /* method declaration */
+        - (int)max:(int)num1 andNum2:(int)num2;
+        @end
+
+        @implementation SampleClass
+
+        /* method returning the max between two numbers */
+        - (int)max:(int)num1 andNum2:(int)num2{
+        /* local variable declaration */
+           int result;
+
+           if (num1 > num2)
+           {
+              result = num1;
+           }
+           else
+           {
+              result = num2;
+           }
+
+           return result;
+        }
+
+        @end
+
+        int main ()
+        {
+           /* local variable definition */
+           int a = 300;
+           int b = 500;
+           int ret;
+
+           SampleClass *sampleClass = [[SampleClass alloc]init];
+
+           /* calling a method to get max value */
+           ret = [sampleClass max:a andNum2:b];
+
+           printf("%d\n", ret );
+
+           return 0;
+        }
+    ') . PHP_EOL;
+
     echo $javascriptSandBox->execute('
         calculate(120, 130, [15, 17, 18, 18, 19]);
 
@@ -127,6 +138,6 @@ echo $phpSandBox->execute('
         function add($a, $b) {
             return $a + $b;
         }
-        
+
         echo add(10, 5);
     '). PHP_EOL;

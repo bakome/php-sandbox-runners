@@ -8,10 +8,19 @@ use SandboxRE\Executor\Executor;
 
 class ObjectiveCLangExecutor extends DockerExecutor implements Executor
 {
-    private $baseDir = '/tmp/php-sandbox-runners/';
+    private $baseDir = '/root/runners/';
 
-    public function __construct()
+    private $options = [
+        'execWaitTime' => 2
+    ];
+
+    public function __construct(array $options = [])
     {
+        $this->options = array_merge(
+            $this->options,
+            $options
+        );
+
         parent::__construct();
     }
 
@@ -25,45 +34,32 @@ class ObjectiveCLangExecutor extends DockerExecutor implements Executor
     public function do(string $codeSnippet): SandboxResult
     {
         $file = $this->createTempCodeFile();
-        $this->createCodeFileContent($file, $codeSnippet);
         $compiledName = $this->baseDir . $this->generateUniqueName();
 
+        $command = $this->createCodeFileContent($file, $codeSnippet);
+        $command .= " &&  clang -I/usr/include/GNUstep -fconstant-string-class=NSConstantString -D_NATIVE_OBJC_EXCEPTIONS  -lobjc -w $file -o $compiledName -lgnustep-base";
+        $command .= " &&  $compiledName";
+
         try {
-            shell_exec("clang -I/usr/include/GNUstep -fconstant-string-class=NSConstantString -D_NATIVE_OBJC_EXCEPTIONS  -lobjc -w $file -o $compiledName -lgnustep-base");
-            $results = shell_exec("$compiledName");
+            $results = $this->execute($command, $this->options['execWaitTime']);
         } catch (\Exception $e) {
             $results = $e->getCode . " : " . $e->getMessage();
-        } finally {
-            $this->clearFiles($file, $compiledName);
         }
 
         return new SandboxResult($results);
     }
 
-    private function clearFiles($file, $compiledName)
-    {
-        @unlink($file);
-        @unlink($compiledName);
-
-        return true;
-    }
-
     private function createTempCodeFile()
     {
-        $file = $this->baseDir . "objective-c" . $this->generateUniqueName() . ".m";
-
-        if(!is_dir($this->baseDir)) {
-            mkdir($this->baseDir);
-        }
-
-        return $file;
+        return $this->baseDir . "objective-c"  . $this->generateUniqueName() . ".m";
     }
 
     private function createCodeFileContent($file, $codeSnippet)
     {
-        $handle = fopen($file, "w");
-        fwrite($handle, $codeSnippet);
-        fclose($handle);
+        $code = str_replace("'", "\"", $codeSnippet);
+        $code = str_replace("\\n", "\\\\n", $code);
+
+        return "mkdir -p {$this->baseDir} && touch $file && echo '$code' >> $file";
     }
 
     private function generateUniqueName()

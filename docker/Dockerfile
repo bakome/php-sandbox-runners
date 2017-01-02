@@ -11,6 +11,7 @@ RUN apt-get install -y clang
 RUN apt-get install -y gobjc build-essential
 RUN apt-get install -y gnustep-devel
 RUN apt-get install -y time
+RUN find / -name "objc" -exec sh -c 'ln -s $1 /usr/local/include/objc' sh {} \;
 RUN apt-get -y autoremove && apt-get clean && apt-get autoclean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 

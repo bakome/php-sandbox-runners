@@ -40,13 +40,11 @@ class JavaDefaultExecutor extends DockerExecutor implements Executor
         $file = $this->createTempCodeFile($fileName);
 
         $command = $this->createCodeFileContent($file, $codeSnippet, $fileName);
+        $command .= " &&  javac $file.java";
+        $command .= " &&  java -cp $this->baseDir $fileName";
 
         try {
-            $command .= " &&  javac $file.java";
-            $command .= " &&  java -cp $this->baseDir $fileName";
-
             $results = $this->execute($command, $this->options['execWaitTime']);
-
         } catch (\Exception $e) {
             $results = $e->getCode . " : " . $e->getMessage();
         }
@@ -61,9 +59,9 @@ class JavaDefaultExecutor extends DockerExecutor implements Executor
 
     private function createCodeFileContent($file, $codeSnippet, $fileName)
     {
-
         $code = str_replace("public class Main", "public class $fileName", $codeSnippet);
         $code = str_replace("'", "\"", $code);
+        $code = str_replace("\\n", "\\\\n", $code);
         $code = trim(preg_replace('/\s\s+/', ' ', $code));
 
         return "mkdir -p {$this->baseDir} && touch $file.java && echo '$code' >> $file.java";
