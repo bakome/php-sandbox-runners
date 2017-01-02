@@ -9,44 +9,33 @@ abstract class DockerExecutor
 {
     protected $docker;
     protected $containerManager;
-    protected $webSocketStream;
 
     protected $dockerImage = 'php-sandbox-runner';
-    protected $sandboxDockerContainerName = 'php-sandbox-container-runner';
 
     public function __construct()
     {
         $this->docker = new Docker();
-
         $this->containerManager = $this->docker->getContainerManager();
 
+    }
+
+    public function createContainer()
+    {
         $containerConfig = new ContainerConfig();
         $containerConfig->setImage($this->dockerImage);
         $containerConfig->setCmd(["sh"]);
         $containerConfig->setOpenStdin(true);
-        $containerConfig->setTty(true);
+        $containerConfig->setTty(false);
 
-        try{
-            $container = $this->containerManager->find($this->sandboxDockerContainerName);
-            $isRunning = $container->getState()->getRunning();
-        } catch (\Exception $exception) {
-            $isRunning = false;
-        }
+        $creatingResults = $this->containerManager->create($containerConfig);
+        $this->containerManager->start($creatingResults->getId());
 
-        if(!$isRunning) {
-            try{
-                $this->containerManager->create(
-                    $containerConfig,
-                    ['name' => $this->sandboxDockerContainerName]
-                );
-            } catch (\Exception $exception) {
+        return $creatingResults->getId();
+    }
 
-            }
-
-            $this->containerManager->start($this->sandboxDockerContainerName);
-        }
-
-        $this->webSocketStream = $this->containerManager->attachWebsocket($this->sandboxDockerContainerName, [
+    public function attachSocket($containerID)
+    {
+        return $this->containerManager->attachWebsocket($containerID, [
             'stream' => true,
             'stdout' => true,
             'stderr' => true,
@@ -56,19 +45,20 @@ abstract class DockerExecutor
 
     public function execute(string $command) : string
     {
-        $this->clearReadBuffer();
-        $this->webSocketStream->write($command . PHP_EOL);
+        $containerId = $this->createContainer();
+        $webSocketStream = $this->attachSocket($containerId);
+
+        $webSocketStream->write($command . PHP_EOL);
 
         $output = "";
-        while (($data = $this->webSocketStream->read(1, 200000)) != false) {
+        while (($data = $webSocketStream->read(1)) != false) {
             $output .= $data;
         }
 
-        return trim(str_replace($command, "", substr($output, 0, -2)));
-    }
+        $webSocketStream->write("exit" . PHP_EOL);
+        $this->containerManager->kill($containerId);
+        $this->containerManager->remove($containerId);
 
-    private function clearReadBuffer()
-    {
-        while (($this->webSocketStream->read()) != false);
+        return trim($output);
     }
 }

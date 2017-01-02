@@ -37,50 +37,35 @@ class JavaDefaultExecutor extends DockerExecutor implements Executor
     {
         $fileName = $this->generateUniqueName();
         $file = $this->createTempCodeFile($fileName);
-        $this->createCodeFileContent($file, $codeSnippet, $fileName);
-        $compiledName = $this->baseDir . $this->generateUniqueName();
+
+        $command = $this->createCodeFileContent($file, $codeSnippet, $fileName);
 
         try {
-            $this->execute("javac $file.java");
+            $command .= " &&  javac $file.java";
+            $command .= " &&  java -cp $this->baseDir $fileName";
 
-            $results = $this->execute(
-                "java -cp $this->baseDir $fileName"
-            );
+            $results = $this->execute($command);
 
         } catch (\Exception $e) {
             $results = $e->getCode . " : " . $e->getMessage();
-        } finally {
-            $this->clearFiles($file, $compiledName);
         }
 
         return new SandboxResult($results);
     }
 
-    private function clearFiles($file, $compiledName)
-    {
-        $this->execute("rm -rf $file.java");
-        $this->execute("rm -rf $compiledName");
-
-        return true;
-    }
-
     private function createTempCodeFile($fileName)
     {
-        $file = $this->baseDir . $fileName;
-
-        $this->execute("mkdir -p $this->baseDir");
-
-        return $file;
+        return $this->baseDir . $fileName;
     }
 
     private function createCodeFileContent($file, $codeSnippet, $fileName)
     {
+
         $code = str_replace("public class Main", "public class $fileName", $codeSnippet);
         $code = str_replace("'", "\"", $code);
         $code = trim(preg_replace('/\s\s+/', ' ', $code));
 
-        $this->execute("touch $file.java");
-        $this->execute("echo '$code' >> $file.java");
+        return "mkdir -p {$this->baseDir} && touch $file.java && echo '$code' >> $file.java";
     }
 
     private function generateUniqueName()
